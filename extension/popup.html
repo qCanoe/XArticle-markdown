@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <style>
+    :root {
+      --bg-default: #ffffff;
+      --bg-canvas: #f6f8fa;
+      --bg-subtle: #eaeef2;
+      --border-default: #d0d7de;
+      --border-muted: #d8dee4;
+      --text-default: #1f2328;
+      --text-muted: #656d76;
+      --accent: #0969da;
+      --accent-hover: #0550ae;
+      --accent-focus: rgba(9, 105, 218, 0.3);
+      --success: #1a7f37;
+      --success-bg: #dafbe1;
+      --error: #cf222e;
+      --error-bg: #ffebe9;
+      --radius: 6px;
+      --space-4: 4px;
+      --space-8: 8px;
+      --space-12: 12px;
+      --space-16: 16px;
+      --space-20: 20px;
+      --transition: 0.15s cubic-bezier(0.33, 1, 0.68, 1);
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 380px;
+      min-width: 380px;
+      max-width: 380px;
+      min-height: 320px;
+      background: var(--bg-default);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      color: var(--text-default);
+      line-height: 1.5;
+    }
+
+    .popup-inner {
+      width: 380px;
+      padding: var(--space-16);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-16);
+    }
+
+    /* Header */
+    .header {
+      padding-bottom: var(--space-12);
+      border-bottom: 1px solid var(--border-default);
+    }
+    .logo {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-default);
+    }
+    .logo span { color: var(--accent); }
+
+    /* Tabs - GitHub UnderlineNav style */
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border-default);
+      margin: 0 calc(-1 * var(--space-16));
+      padding: 0 var(--space-16);
+    }
+    .tab {
+      padding: var(--space-8) 0;
+      margin: 0 var(--space-8);
+      margin-bottom: -1px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: color var(--transition), border-color var(--transition);
+    }
+    .tab:hover { color: var(--text-default); }
+    .tab:focus-visible {
+      outline: none;
+      border-radius: var(--radius);
+      box-shadow: 0 0 0 2px var(--accent-focus);
+    }
+    .tab.active {
+      color: var(--text-default);
+      border-bottom-color: var(--accent);
+    }
+
+    /* Panels */
+    .panel {
+      display: none;
+    }
+    .panel.active {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-12);
+    }
+
+    .panel-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin: 0 0 var(--space-4);
+      letter-spacing: 0.02em;
+    }
+
+    /* Inputs - GitHub form style */
+    input[type="url"],
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 6px 12px;
+      background: var(--bg-default);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius);
+      font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
+      font-size: 13px;
+      color: var(--text-default);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    input::placeholder { color: var(--text-muted); opacity: 0.8; }
+    input:hover { border-color: var(--border-muted); }
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-focus);
+    }
+    input:focus-visible {
+      outline: none;
+    }
+
+    /* Checkbox row */
+    .row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-12);
+      padding: var(--space-12);
+      background: var(--bg-canvas);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius);
+    }
+    .row label {
+      flex: 1;
+      font-size: 14px;
+      color: var(--text-default);
+      cursor: pointer;
+      user-select: none;
+    }
+    .checkbox-wrap {
+      position: relative;
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+    .checkbox-wrap input {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      margin: 0;
+      padding: 0;
+    }
+    .checkbox-wrap input:focus-visible + .checkmark {
+      box-shadow: 0 0 0 2px var(--accent-focus);
+    }
+    .checkbox-wrap .checkmark {
+      position: relative;
+      display: block;
+      width: 16px;
+      height: 16px;
+      background: var(--bg-default);
+      border: 1px solid var(--border-default);
+      border-radius: 3px;
+      transition: var(--transition);
+      pointer-events: none;
+    }
+    .checkbox-wrap input:checked + .checkmark {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .checkbox-wrap .checkmark::after {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 1px;
+      width: 4px;
+      height: 9px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+      opacity: 0;
+      transition: var(--transition);
+    }
+    .checkbox-wrap input:checked + .checkmark::after { opacity: 1; }
+
+    /* Buttons - GitHub btn-primary style */
+    .btn {
+      width: 100%;
+      padding: 8px 16px;
+      min-height: 36px;
+      background: var(--accent);
+      border: 1px solid rgba(27, 31, 36, 0.15);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      color: white;
+      cursor: pointer;
+      transition: background var(--transition), border-color var(--transition), box-shadow var(--transition), opacity var(--transition);
+      box-shadow: 0 1px 0 rgba(27, 31, 36, 0.04);
+    }
+    .btn:hover:not(:disabled) {
+      background: var(--accent-hover);
+      border-color: rgba(27, 31, 36, 0.15);
+    }
+    .btn:active:not(:disabled) {
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    .btn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--accent-focus);
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: var(--bg-canvas);
+      color: var(--text-default);
+      border-color: var(--border-default);
+      box-shadow: none;
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--bg-subtle);
+      border-color: var(--border-default);
+    }
+    .btn-secondary:focus-visible {
+      box-shadow: 0 0 0 2px var(--accent-focus);
+    }
+
+    /* Message */
+    .msg {
+      padding: var(--space-12);
+      border-radius: var(--radius);
+      font-size: 13px;
+      line-height: 1.5;
+      border: 1px solid transparent;
+    }
+    .msg:empty { display: none; }
+    .msg.success {
+      background: var(--success-bg);
+      color: var(--success);
+      border-color: rgba(26, 127, 55, 0.2);
+    }
+    .msg.error {
+      background: var(--error-bg);
+      color: var(--error);
+      border-color: rgba(207, 34, 46, 0.2);
+    }
+
+    /* Settings fields */
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-12);
+    }
+    .field > label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-default);
+    }
+    .hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .hint a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .hint a:hover { text-decoration: underline; }
+
+    .save-row {
+      margin-top: var(--space-4);
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%) translateY(12px);
+      padding: 10px 20px;
+      background: var(--text-default);
+      color: var(--bg-default);
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+      z-index: 100;
+    }
+    .toast.is-visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Loading state */
+    .btn.is-loading {
+      position: relative;
+      color: transparent !important;
+      pointer-events: none;
+    }
+    .btn:not(.btn-secondary).is-loading::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 16px;
+      height: 16px;
+      margin: -8px 0 0 -8px;
+      border: 2px solid transparent;
+      border-top-color: rgba(255,255,255,0.9);
+      border-right-color: rgba(255,255,255,0.4);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    .btn-secondary.is-loading::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 16px;
+      height: 16px;
+      margin: -8px 0 0 -8px;
+      border: 2px solid transparent;
+      border-top-color: var(--text-muted);
+      border-right-color: var(--border-default);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .toast { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="popup-inner">
+    <header class="header">
+      <span class="logo">X → <span>MD</span></span>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="主菜单">
+      <button class="tab active" id="tab-download" role="tab" aria-selected="true" aria-controls="panel-download" data-panel="download">下载</button>
+      <button class="tab" id="tab-settings" role="tab" aria-selected="false" aria-controls="panel-settings" data-panel="settings">设置</button>
+    </nav>
+
+    <div id="panel-download" class="panel active" role="tabpanel" aria-labelledby="tab-download">
+      <p class="panel-title">抓取推文</p>
+      <input type="url" id="url" placeholder="https://x.com/user/status/..." aria-label="推文链接" autocomplete="url">
+      <div class="row">
+        <div class="checkbox-wrap">
+          <input type="checkbox" id="translate" checked>
+          <span class="checkmark"></span>
+        </div>
+        <label for="translate">同时翻译为中文</label>
+      </div>
+      <button class="btn" id="download" type="button">下载 Markdown</button>
+      <div id="msg"></div>
+    </div>
+
+    <div id="panel-settings" class="panel" role="tabpanel" aria-labelledby="tab-settings">
+      <p class="panel-title" id="tab-settings">偏好设置</p>
+      <div class="row">
+        <div class="checkbox-wrap">
+          <input type="checkbox" id="autoDownloadOnBookmark" checked>
+          <span class="checkmark"></span>
+        </div>
+        <label for="autoDownloadOnBookmark">书签推文时自动下载</label>
+      </div>
+      <div class="row">
+        <div class="checkbox-wrap">
+          <input type="checkbox" id="translateOnBookmark">
+          <span class="checkmark"></span>
+        </div>
+        <label for="translateOnBookmark">书签时同时翻译</label>
+      </div>
+      <div class="field">
+        <label for="openrouter_api_key">OpenRouter API Key</label>
+        <input type="password" id="openrouter_api_key" placeholder="sk-or-v1-..." autocomplete="off">
+        <div class="hint">在 <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai</a> 获取</div>
+      </div>
+      <div class="field">
+        <label for="model">模型</label>
+        <input type="text" id="model" placeholder="openai/gpt-4o-mini" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="translate_to">翻译目标语言</label>
+        <input type="text" id="translate_to" placeholder="Chinese" autocomplete="off">
+      </div>
+      <div class="save-row">
+        <button class="btn btn-secondary" id="save" type="button">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-hidden="true">已保存</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

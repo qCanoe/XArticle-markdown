@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Generate Icons</title></head>
+<body>
+  <p>点击下方按钮生成并下载图标，保存到 extension/icons/ 文件夹</p>
+  <button id="gen">生成图标</button>
+  <script>
+    document.getElementById("gen").onclick = () => {
+      [16, 48, 128].forEach(size => {
+        const c = document.createElement("canvas");
+        c.width = c.height = size;
+        const ctx = c.getContext("2d");
+        ctx.fillStyle = "#1d9bf0";
+        ctx.fillRect(0, 0, size, size);
+        ctx.fillStyle = "white";
+        ctx.font = `bold ${size * 0.5}px sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("X", size / 2, size / 2);
+        const a = document.createElement("a");
+        a.href = c.toDataURL("image/png");
+        a.download = `icon${size}.png`;
+        a.click();
+      });
+      alert("已下载 icon16.png, icon48.png, icon128.png，请移动到 extension/icons/ 文件夹");
+    };
+  </script>
+</body>
+</html>
