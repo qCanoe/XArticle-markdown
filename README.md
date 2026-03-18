@@ -2,6 +2,13 @@
 
 将 X/Twitter 推文抓取并转换为 Markdown，支持可选翻译为中文。
 
+
+<p align="center">
+  <img src="image/image.png" alt="XArticle-markdown 示例截图" width="600">
+</p>
+
+
+
 ## 功能
 
 - **命令行工具**：`fetch_tweet.py` 通过 FxTwitter/VxTwitter API 抓取推文（免费，无需 Twitter API key）
@@ -56,3 +63,4 @@ xArticle-markdown/
 
 - Python 3.x（标准库，无需额外安装）
 - Chrome / Edge（扩展）
+
