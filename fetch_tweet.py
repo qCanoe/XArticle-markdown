@@ -192,6 +192,20 @@ def _build_article_media_map(article: dict) -> dict:
     return key_to_url
 
 
+def _build_article_entity_map(article: dict) -> dict:
+    """构建 entity_key -> entity 的映射（用于 Article 内嵌 MARKDOWN 代码块等）"""
+    entity_list = article.get("content", {}).get("entityMap", [])
+    result = {}
+    for ent in entity_list:
+        if not isinstance(ent, dict):
+            continue
+        key = str(ent.get("key", ""))
+        val = ent.get("value", {})
+        if key:
+            result[key] = val
+    return result
+
+
 def _extract_fxtwitter_text(tweet: dict, as_markdown: bool = False) -> str:
     """从 FxTwitter 的 tweet 对象中提取完整文本（含 Article 长文、图片占位）"""
     text = tweet.get("text", "").strip()
@@ -202,23 +216,35 @@ def _extract_fxtwitter_text(tweet: dict, as_markdown: bool = False) -> str:
     blocks = article.get("content", {}).get("blocks", [])
     if blocks:
         media_map = _build_article_media_map(article)
+        entity_map = _build_article_entity_map(article)
         parts = []
         for b in blocks:
             block_type = b.get("type", "")
             t = b.get("text", "").strip()
-            # atomic 类型：通常是内嵌图片，通过 entityRanges 关联
+            # atomic 类型：可能是内嵌图片(MEDIA)或代码块(MARKDOWN)，通过 entityRanges 关联
             if block_type == "atomic":
                 entity_ranges = b.get("entityRanges", [])
-                img_url = ""
+                resolved = False
                 for er in entity_ranges:
                     k = str(er.get("key", ""))
-                    img_url = media_map.get(k, "")
-                    if img_url:
+                    ent = entity_map.get(k, {})
+                    ent_type = ent.get("type", "")
+                    if ent_type == "MARKDOWN":
+                        md_content = ent.get("data", {}).get("markdown", "").strip()
+                        if md_content:
+                            parts.append(f"\n{md_content}\n")
+                            resolved = True
+                            break
+                    elif ent_type == "MEDIA":
+                        img_url = media_map.get(k, "")
+                        if as_markdown and img_url:
+                            parts.append(f"\n![图片]({img_url})\n")
+                        else:
+                            parts.append(f"\n[图片] {img_url}\n" if img_url else "\n[图片]\n")
+                        resolved = True
                         break
-                if as_markdown and img_url:
-                    parts.append(f"\n![图片]({img_url})\n")
-                else:
-                    parts.append(f"\n[图片] {img_url}\n" if img_url else "\n[图片]\n")
+                if not resolved:
+                    parts.append("\n[图片]\n")
             elif t:
                 if block_type == "header-one":
                     parts.append(f"\n# {t}\n")

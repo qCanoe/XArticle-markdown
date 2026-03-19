@@ -73,6 +73,17 @@ function buildArticleMediaMap(article) {
   return keyToUrl;
 }
 
+function buildArticleEntityMap(article) {
+  const entityList = article.content?.entityMap || [];
+  const result = {};
+  for (const ent of entityList) {
+    if (ent && typeof ent === "object" && ent.key) {
+      result[String(ent.key)] = ent.value || {};
+    }
+  }
+  return result;
+}
+
 function extractFxTwitterText(tweet, asMarkdown = false) {
   let text = (tweet.text || "").trim();
   if (text) return text;
@@ -85,22 +96,37 @@ function extractFxTwitterText(tweet, asMarkdown = false) {
   }
 
   const mediaMap = buildArticleMediaMap(article);
+  const entityMap = buildArticleEntityMap(article);
   const parts = [];
 
   for (const b of blocks) {
     const blockType = b.type || "";
     const t = (b.text || "").trim();
     if (blockType === "atomic") {
-      let imgUrl = "";
+      let resolved = false;
       for (const er of b.entityRanges || []) {
-        imgUrl = mediaMap[String(er.key)] || "";
-        if (imgUrl) break;
+        const k = String(er.key || "");
+        const ent = entityMap[k] || {};
+        const entType = ent.type || "";
+        if (entType === "MARKDOWN") {
+          const mdContent = (ent.data?.markdown || "").trim();
+          if (mdContent) {
+            parts.push(`\n${mdContent}\n`);
+            resolved = true;
+            break;
+          }
+        } else if (entType === "MEDIA") {
+          const imgUrl = mediaMap[k] || "";
+          if (asMarkdown && imgUrl) {
+            parts.push(`\n![图片](${imgUrl})\n`);
+          } else {
+            parts.push(imgUrl ? `\n[图片] ${imgUrl}\n` : "\n[图片]\n");
+          }
+          resolved = true;
+          break;
+        }
       }
-      if (asMarkdown && imgUrl) {
-        parts.push(`\n![图片](${imgUrl})\n`);
-      } else {
-        parts.push(imgUrl ? `\n[图片] ${imgUrl}\n` : "\n[图片]\n");
-      }
+      if (!resolved) parts.push("\n[图片]\n");
     } else if (t) {
       if (blockType === "header-one") parts.push(`\n# ${t}\n`);
       else if (blockType === "header-two") parts.push(`\n## ${t}\n`);
