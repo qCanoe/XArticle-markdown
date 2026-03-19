@@ -270,8 +270,6 @@ def display_tweet(data: dict, source: str):
     if source == "FxTwitter":
         tweet = data.get("tweet", {})
         print(f"作者: {tweet.get('author', {}).get('name', '?')} (@{tweet.get('author', {}).get('screen_name', '?')})")
-        print(f"时间: {tweet.get('created_at', '?')}")
-        print(f"点赞: {tweet.get('likes', '?')} | 转发: {tweet.get('retweets', '?')} | 回复: {tweet.get('replies', '?')} | 浏览: {tweet.get('views', '?')}")
         article = tweet.get("article", {})
         if article:
             print(f"类型: Article | 标题: {article.get('title', '?')}")
@@ -280,14 +278,11 @@ def display_tweet(data: dict, source: str):
     
     elif source == "VxTwitter":
         print(f"作者: {data.get('user_name', '?')} (@{data.get('user_screen_name', '?')})")
-        print(f"时间: {data.get('date', '?')}")
-        print(f"点赞: {data.get('likes', '?')} | 转发: {data.get('retweets', '?')} | 回复: {data.get('replies', '?')}")
         print(f"\n--- 推文内容 ---\n")
         print(data.get("text", "(无内容)"))
     
     elif source == "Syndication":
         print(f"作者: {data.get('user', {}).get('name', '?')} (@{data.get('user', {}).get('screen_name', '?')})")
-        print(f"时间: {data.get('created_at', '?')}")
         print(f"\n--- 推文内容 ---\n")
         print(data.get("text", "(无内容)"))
     
@@ -311,32 +306,22 @@ def to_markdown(data: dict, source: str) -> str:
         name = author.get("name", "?")
         screen_name = author.get("screen_name", "?")
         url = tweet.get("url", "")
-        created = tweet.get("created_at", "?")
-        likes = tweet.get("likes", "?")
-        retweets = tweet.get("retweets", "?")
-        replies = tweet.get("replies", "?")
-        views = tweet.get("views", "?")
         article = tweet.get("article", {})
         title = article.get("title", "").strip() if article else ""
         if title:
             lines.append(f"# {title}\n")
         lines.append(f"\n**作者:** {name} (@{screen_name})\n")
-        lines.append(f"**时间:** {created}\n")
-        lines.append(f"**点赞:** {likes} | **转发:** {retweets} | **回复:** {replies} | **浏览:** {views}\n")
         if url:
             lines.append(f"**链接:** {url}\n")
         lines.append("\n---\n\n")
         lines.append(_extract_fxtwitter_text(tweet, as_markdown=True))
     elif source == "VxTwitter":
         lines.append(f"**作者:** {data.get('user_name', '?')} (@{data.get('user_screen_name', '?')})\n")
-        lines.append(f"**时间:** {data.get('date', '?')}\n")
-        lines.append(f"**点赞:** {data.get('likes', '?')} | **转发:** {data.get('retweets', '?')} | **回复:** {data.get('replies', '?')}\n")
         lines.append("\n---\n\n")
         lines.append(data.get("text", "(无内容)"))
     elif source == "Syndication":
         user = data.get("user", {})
         lines.append(f"**作者:** {user.get('name', '?')} (@{user.get('screen_name', '?')})\n")
-        lines.append(f"**时间:** {data.get('created_at', '?')}\n")
         lines.append("\n---\n\n")
         lines.append(data.get("text", "(无内容)"))
     return "".join(lines)

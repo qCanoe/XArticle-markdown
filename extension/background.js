@@ -150,30 +150,20 @@ function toMarkdown(result) {
     const name = author.name || "?";
     const screenName = author.screen_name || "?";
     const url = tweet.url || "";
-    const created = tweet.created_at || "?";
-    const likes = tweet.likes ?? "?";
-    const retweets = tweet.retweets ?? "?";
-    const replies = tweet.replies ?? "?";
-    const views = tweet.views ?? "?";
     const article = tweet.article || {};
     const title = (article.title || "").trim();
     if (title) lines.push(`# ${title}\n\n`);
     lines.push(`**作者:** ${name} (@${screenName})\n`);
-    lines.push(`**时间:** ${created}\n`);
-    lines.push(`**点赞:** ${likes} | **转发:** ${retweets} | **回复:** ${replies} | **浏览:** ${views}\n`);
     if (url) lines.push(`**链接:** ${url}\n`);
     lines.push("\n---\n\n");
     lines.push(extractFxTwitterText(tweet, true));
   } else if (source === "VxTwitter") {
     lines.push(`**作者:** ${data.user_name || "?"} (@${data.user_screen_name || "?"})\n`);
-    lines.push(`**时间:** ${data.date || "?"}\n`);
-    lines.push(`**点赞:** ${data.likes ?? "?"} | **转发:** ${data.retweets ?? "?"} | **回复:** ${data.replies ?? "?"}\n`);
     lines.push("\n---\n\n");
     lines.push(data.text || "(无内容)");
   } else if (source === "Syndication") {
     const user = data.user || {};
     lines.push(`**作者:** ${user.name || "?"} (@${user.screen_name || "?"})\n`);
-    lines.push(`**时间:** ${data.created_at || "?"}\n`);
     lines.push("\n---\n\n");
     lines.push(data.text || "(无内容)");
   }
